@@ -1,7 +1,7 @@
 AddCSLuaFile()
 
 require( "cfclogger" )
-local Alerter = CFCLogger( "HookWatch" )
+local Alerter = CFCLogger( "HookWatch", "debug" )
 
 local function wrapHookAdd()
     local originalHookAdd = hook.Add
