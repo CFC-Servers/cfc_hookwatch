@@ -1,9 +1,16 @@
 AddCSLuaFile()
 
+local Count = table.Count
+local rawset = rawset
+local rawget = rawget
+
 require( "cfclogger" )
 local Alerter = CFCLogger( "HookWatch" )
+CFCHookWatch = {
+    initialHookCounts = {}
+}
 
-local function wrapHookAdd()
+function CFCHookWatch.wrapHookAdd()
     local originalHookAdd = hook.Add
 
     hook.Add = function( eventName, identifier, func )
@@ -16,4 +23,34 @@ local function wrapHookAdd()
     end
 end
 
-hook.Add( "OnGamemodeLoaded", "CFC_HookWatch", wrapHookAdd )
+function CFCHookWatch.countHooks()
+    local hookCounts = {}
+
+    for eventName, hooks in pairs(hook.GetTable()) do
+        rawset( hookCounts, eventName, Count( hooks ) )
+    end
+
+    return hookCounts
+end
+
+function CFCHookWatch.timerCountThink()
+    local initialCounts = CFCHookWatch.initialCounts
+    for hookName, count in pairs( CFCHookWatch.countHooks() ) do
+        local initialCount = initialCounts[hookName]
+        local diff = count - initialCount
+
+        if diff > 20 then
+            Alerter:warn(
+                "Detected potential hook bloat",
+                hookName .. " has grown by " .. diff .. " listeners since session start"
+            )
+        end
+    end
+end
+
+function CFCHookWatch.init()
+    CFCHookWatch.wrapHookAdd()
+    CFCHookWatch.initialHookCounts = CFCHookWatch.countHooks()
+end
+
+hook.Add( "OnGamemodeLoaded", "CFC_HookWatch", CFCHookWatch.init )
