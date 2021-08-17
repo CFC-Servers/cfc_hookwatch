@@ -4,8 +4,8 @@ local Count = table.Count
 local rawset = rawset
 local rawget = rawget
 
-require( "cfclogger" )
-local Alerter = CFCLogger( "HookWatch" )
+require( "logger" )
+local Alerter = Logger( "HookWatch" )
 CFCHookWatch = {
     initialHookCounts = {}
 }
